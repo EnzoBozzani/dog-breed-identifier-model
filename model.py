@@ -1,11 +1,17 @@
-from fastai.vision.all import Path, get_image_files, DataBlock, ImageBlock, CategoryBlock, RandomSplitter, parent_label, Resize, vision_learner, error_rate, resnet18, PILImage, Image, resize_image  # noqa: E501
+from fastai.vision.all import Path, get_image_files, DataBlock, ImageBlock, CategoryBlock, RandomSplitter, parent_label, Resize, vision_learner, error_rate, resnet18, PILImage  # type: ignore  # noqa: E501
+import os
+
+
+def list_breeds():
+    dirs = os.listdir('./dogs')
+    dirs.sort()
+    return dirs
+
 
 path = Path('./dogs')
 
-path2 = Path('./')
-
-dest = 'dog.jpg'
-resize_image(path2/dest, max_size=400, dest=path2/dest)
+dest = input('Image: ')
+# resize_image(path2/dest, max_size=400, dest=path2/dest)
 
 
 dls = DataBlock(
@@ -20,6 +26,25 @@ dls = DataBlock(
 learn = vision_learner(dls, resnet18, metrics=error_rate)
 learn.fine_tune(3)
 
-breed,  _,  probs = learn.predict(PILImage.create(dest))
-print(f"This is a: {breed}.")
-print(f"Probability this dog belongs to this breed: {probs[1]:.4f}")
+available_breeds = list_breeds()
+
+most_likely_breed,  _,  probs = learn.predict(PILImage.create(dest))
+print(f"This is probably a: {most_likely_breed}.")
+
+probabilities: list[float] = []
+
+for prob in probs:
+    probabilities.append(prob)
+
+ten_most_likely: list[tuple[str, float]] = []
+
+for i in range(10):
+    prob = max(probabilities)
+    index = probabilities.index(prob)
+    probabilities.pop(index)
+    breed = available_breeds[index]
+
+    ten_most_likely.append((breed, prob))
+
+for breed in ten_most_likely:
+    print(f'Probability of being a {breed[0]}: {breed[1] * 100:.2f} %')

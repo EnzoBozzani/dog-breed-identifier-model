@@ -1,6 +1,6 @@
 from duckduckgo_search import DDGS
-from fastcore.all import L
-from fastai.vision.all import Path, download_images, resize_images, verify_images, get_image_files  # noqa: E501
+from fastcore.all import L  # type: ignore
+from fastai.vision.all import Path, download_images, resize_images, verify_images, get_image_files  # type: ignore # noqa: E501
 from time import sleep
 import json
 
@@ -15,7 +15,7 @@ def search_images(term, max_images=30):
 breeds: list[str] = []
 
 
-with open('./test.json') as file:
+with open('./breeds.json') as file:
     data = json.load(file)['message']
 
     for key in data:
@@ -32,7 +32,7 @@ path = Path('./dogs')
 for breed in breeds:
     dest = (path/breed)
     dest.mkdir(exist_ok=True, parents=True)
-    download_images(dest, urls=search_images(f'{breed} photos'))
+    download_images(dest, urls=search_images(f'{breed} dog photos'))
     sleep(10)
     resize_images(path/breed, max_size=400, dest=path/breed)
     failed = verify_images(get_image_files(dest))
