@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.11"
 fastai = "^2.7.17"
 duckduckgo-search = "^6.2.11"
+fastapi = {extras = ["all"], version = "^0.113.0"}
 
 
 [build-system]
