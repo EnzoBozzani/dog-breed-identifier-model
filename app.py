@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-import time
+from services.custom_model import search_images, train_model
+
 
 app = FastAPI()
 
@@ -14,17 +15,15 @@ app.add_middleware(
 )
 
 
-def operation_stream(strings: list):
-    for string in strings:
-        yield f"Buscando imagens para: {string}...\n"
-        time.sleep(2)
+@app.post("/search-images")
+async def search(request: Request):
+    terms = await request.json()
 
-    yield "Iniciando outro processo...\n"
-    time.sleep(2)
+    return StreamingResponse(search_images(terms), media_type="text/plain")  # noqa: E501
 
 
-@app.post("/process")
-async def process_strings(request: Request):
-    strings = await request.json()
+@app.post('/train-model')
+async def train(request: Request):
+    # path = await request.json()
 
-    return StreamingResponse(operation_stream(strings), media_type="text/plain")  # noqa: E501
+    return StreamingResponse(train_model(), media_type="application/octet-stream")  # noqa: E501
