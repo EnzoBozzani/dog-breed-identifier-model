@@ -22,8 +22,13 @@ async def search(request: Request):
     return StreamingResponse(search_images(terms), media_type="text/plain")  # noqa: E501
 
 
-@app.post('/train-model')
-async def train(request: Request):
-    # path = await request.json()
+@app.post('/train-model/{id}')
+async def train(id: str):
 
-    return StreamingResponse(train_model(), media_type="application/octet-stream")  # noqa: E501
+    return StreamingResponse(
+        train_model(id),
+        media_type="application/octet-stream",
+        headers={
+            "Content-Disposition": "attachment; filename=model.pkl"
+        }
+    )
