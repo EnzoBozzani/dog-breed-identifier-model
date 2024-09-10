@@ -24,7 +24,7 @@ def search_breed(breed):
     dest = (path/breed)
     dest.mkdir(exist_ok=True, parents=True)
     download_images(dest, urls=search_images(f'{breed} dog photos', 50))
-    sleep(10)
+    sleep(.1)
     resize_images(path/breed, max_size=400, dest=path/breed)
     failed = verify_images(get_image_files(dest))
     failed.map(Path.unlink)

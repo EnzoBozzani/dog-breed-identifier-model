@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from services.custom_model import search_images, train_model
+from services.model import train_model, predict_image
+from services.images import search_images
 
 
 app = FastAPI()
@@ -32,3 +33,10 @@ async def train(id: str):
             "Content-Disposition": "attachment; filename=model.pkl"
         }
     )
+
+
+@app.post('/predict')
+async def predict(model: UploadFile = File(...), image: UploadFile = File(...)):  # noqa: E501
+    categories = predict_image(model, image)
+
+    return categories
