@@ -3,6 +3,7 @@ from fastai.vision.all import Path, resize_images, get_image_files, DataBlock, I
 from uuid import uuid4
 import os
 import shutil
+from torch import Tensor
 
 
 def train_model(pathId: str):
@@ -38,6 +39,10 @@ def train_model(pathId: str):
     os.remove(f'./models/{pathId}.pkl')
 
 
+def sortCallback(element: tuple[str, Tensor]):
+    return element[1]
+
+
 def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):  # noqa: E501
     if not os.path.exists('./predictions'):
         os.mkdir('./predictions')
@@ -60,9 +65,9 @@ def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):
 
     _,  most_likely_index,  probs = learn_inf.predict(PILImage.create(f'./predictions/{id}/image.jpg'))  # noqa: E501
 
-    available_categories = learn_inf.dls.vocab
+    available_categories = list(learn_inf.dls.vocab)
 
-    probabilities: list[float] = []
+    probabilities: list[Tensor] = []
 
     count = 0
     for prob in probs:
@@ -70,16 +75,17 @@ def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):
             probabilities.append(prob)
         count += 1
 
-    three_most_likely: list[tuple[str, float]] = [(available_categories[most_likely_index], probs[most_likely_index].item())]  # noqa: E501
+    categories: list[tuple[str, Tensor]] = [(available_categories[most_likely_index], probs[most_likely_index])]  # noqa: E501
 
-    for _ in range(2):
-        prob = max(probabilities)
-        index = probabilities.index(prob)
-        probabilities.pop(index)
-        category = available_categories[index]
+    available_categories.pop(most_likely_index)
 
-        three_most_likely.append((category, prob.item()))
+    for i in range(len(available_categories)):
+        category: str = available_categories[i]
+
+        categories.append((category, probabilities[i]))
+
+    categories.sort(reverse=True, key=sortCallback)
 
     shutil.rmtree(f'./predictions/{id}')
 
-    return [[cat, prob] for cat, prob in three_most_likely]
+    return [[cat, prob.item()] for cat, prob in categories]
