@@ -1,6 +1,5 @@
 from fastapi import UploadFile, File
 from fastai.vision.all import Path, resize_images, get_image_files, DataBlock, ImageBlock, CategoryBlock, RandomSplitter, parent_label, Resize, vision_learner, error_rate, RandomResizedCrop, resnet18, load_learner, PILImage  # type: ignore # noqa: E501
-from uuid import uuid4
 import os
 import shutil
 from torch import Tensor
@@ -39,18 +38,8 @@ def train_model(pathId: str):
     os.remove(f'./models/{pathId}.pkl')
 
 
-def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):  # noqa: E501
-    if not os.path.exists('./predictions'):
-        os.mkdir('./predictions')
-
-    id = str(uuid4())
-
-    os.mkdir(f'./predictions/{id}')
-
+def predict_image(id: str, image: UploadFile = File(...)):
     path = Path(f'./predictions/{id}')
-
-    with open(f'./predictions/{id}/model.pkl', 'wb') as buffer:
-        shutil.copyfileobj(model.file, buffer)
 
     with open(f'./predictions/{id}/image.jpg', 'wb') as buffer:
         shutil.copyfileobj(image.file, buffer)
@@ -59,7 +48,7 @@ def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):
 
     learn_inf = load_learner(f'./predictions/{id}/model.pkl')
 
-    _,  most_likely_index,  probs = learn_inf.predict(PILImage.create(f'./predictions/{id}/image.jpg'))  # noqa: E501
+    _,  most_likely_index,  probs = learn_inf.predict(PILImage.create(f'./predictions/{id}/image.jpg'))
 
     available_categories = list(learn_inf.dls.vocab)
 
@@ -71,7 +60,7 @@ def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):
             probabilities.append(prob)
         count += 1
 
-    categories: list[tuple[str, Tensor]] = [(available_categories[most_likely_index], probs[most_likely_index])]  # noqa: E501
+    categories: list[tuple[str, Tensor]] = [(available_categories[most_likely_index], probs[most_likely_index])]
 
     available_categories.pop(most_likely_index)
 
@@ -82,6 +71,6 @@ def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):
 
     categories.sort(reverse=True, key=(lambda element: element[1].item()))
 
-    shutil.rmtree(f'./predictions/{id}')
+    os.remove(f'./predictions/{id}/image.jpg')
 
     return [[cat, prob.item()] for cat, prob in categories]
