@@ -1,5 +1,5 @@
 import os
-from fastai.vision.all import load_learner, PILImage, resize_images, Path  # type: ignore  # noqa: E501
+from fastai.vision.all import load_learner, PILImage, resize_images, Path  # type: ignore
 
 
 def main() -> None:
@@ -14,7 +14,7 @@ def main() -> None:
 
     learn_inf = load_learner('./model/model.pkl')
 
-    most_likely_breed,  most_likely_index,  probs = learn_inf.predict(PILImage.create(dest))  # noqa: E501
+    most_likely_breed,  most_likely_index,  probs = learn_inf.predict(PILImage.create(dest))
     print(f"This is probably a: {most_likely_breed}.")
 
     available_breeds = learn_inf.dls.vocab
@@ -27,7 +27,7 @@ def main() -> None:
             probabilities.append(prob)
         count += 1
 
-    ten_most_likely: list[tuple[str, float]] = [(available_breeds[most_likely_index], probs[most_likely_index])]  # noqa: E501
+    ten_most_likely: list[tuple[str, float]] = [(available_breeds[most_likely_index], probs[most_likely_index])]
 
     for i in range(9):
         prob = max(probabilities)

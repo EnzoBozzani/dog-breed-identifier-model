@@ -20,7 +20,7 @@ app.add_middleware(
 async def search(request: Request):
     terms = await request.json()
 
-    return StreamingResponse(search_images(terms), media_type="text/plain")  # noqa: E501
+    return StreamingResponse(search_images(terms), media_type="text/plain")
 
 
 @app.post('/train-model/{id}')
@@ -36,7 +36,7 @@ async def train(id: str):
 
 
 @app.post('/predict')
-async def predict(model: UploadFile = File(...), image: UploadFile = File(...)):  # noqa: E501
+async def predict(model: UploadFile = File(...), image: UploadFile = File(...)):
     categories = predict_image(model, image)
 
     return categories

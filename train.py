@@ -25,7 +25,7 @@ def main() -> None:
 
     data_loaders = data_blocks.dataloaders(path)
 
-    learn = vision_learner(data_loaders, 'convnext_tiny_in22k', metrics=error_rate)  # noqa: E501
+    learn = vision_learner(data_loaders, 'convnext_tiny_in22k', metrics=error_rate)
     learn.fine_tune(3)
 
     interp = ClassificationInterpretation.from_learner(learn)

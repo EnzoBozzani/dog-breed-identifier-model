@@ -1,6 +1,6 @@
 from duckduckgo_search import DDGS
 from fastcore.all import L  # type: ignore
-from fastai.vision.all import Path, download_images, resize_images, verify_images, get_image_files  # type: ignore # noqa: E501
+from fastai.vision.all import Path, download_images, resize_images, verify_images, get_image_files  # type: ignore
 from time import sleep
 import json
 from concurrent.futures import ThreadPoolExecutor
