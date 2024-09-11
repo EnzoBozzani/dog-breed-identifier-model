@@ -23,7 +23,7 @@ def train_model(pathId: str):
 
     data_loaders = data_blocks.dataloaders(path)
 
-    learn = vision_learner(data_loaders, resnet18, metrics=error_rate)  # noqa: E501
+    learn = vision_learner(data_loaders, resnet18, metrics=error_rate)
     learn.fine_tune(3)
 
     shutil.rmtree(f'./images/{pathId}')
@@ -37,10 +37,6 @@ def train_model(pathId: str):
         yield from file
 
     os.remove(f'./models/{pathId}.pkl')
-
-
-def sortCallback(element: tuple[str, Tensor]):
-    return element[1]
 
 
 def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):  # noqa: E501
@@ -84,7 +80,7 @@ def predict_image(model: UploadFile = File(...), image: UploadFile = File(...)):
 
         categories.append((category, probabilities[i]))
 
-    categories.sort(reverse=True, key=sortCallback)
+    categories.sort(reverse=True, key=(lambda element: element[1].item()))
 
     shutil.rmtree(f'./predictions/{id}')
 
