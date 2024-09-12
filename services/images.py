@@ -5,8 +5,16 @@ from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 import os
+import threading
+import shutil
+
 
 ddgs = DDGS()
+
+
+def delete_images(path: str):
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
 
 def search_unique(term: str, path):
@@ -41,3 +49,7 @@ def search_images(terms):
     sleep(.5)
 
     yield id
+
+    timer = threading.Timer(300, delete_images, args=[f'./images/{id}'])
+
+    timer.start()
