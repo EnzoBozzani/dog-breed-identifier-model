@@ -74,3 +74,43 @@ def predict_image(id: str, image: UploadFile = File(...)):
     os.remove(f'./predictions/{id}/image.jpg')
 
     return [[cat, prob.item()] for cat, prob in categories]
+
+
+def predict_dog_breed(path: str, image: UploadFile = File(...)):
+    with open(f'{path}/image.jpg', 'wb') as buffer:
+        shutil.copyfileobj(image.file, buffer)
+
+    folder_path = Path(path)
+
+    resize_images(folder_path, max_size=400, dest=folder_path)
+
+    learn_inf = load_learner('./model/model.pkl')
+
+    _, most_likely_index, probs = learn_inf.predict(PILImage.create(f'{path}/image.jpg'))
+
+    available_breeds = list(learn_inf.dls.vocab)
+
+    probabilities: list[Tensor] = []
+
+    count = 0
+    for prob in probs:
+        if count != most_likely_index:
+            probabilities.append(prob)
+        count += 1
+
+    breeds: list[tuple[str, Tensor]] = [(available_breeds[most_likely_index], probs[most_likely_index])]
+
+    available_breeds.pop(most_likely_index)
+
+    for i in range(len(available_breeds)):
+        category: str = available_breeds[i]
+
+        breeds.append((category, probabilities[i]))
+
+    breeds.sort(reverse=True, key=(lambda element: element[1].item()))
+
+    breeds = breeds[:10]
+
+    os.remove(f'{path}/image.jpg')
+
+    return [[cat, prob.item()] for cat, prob in breeds]
