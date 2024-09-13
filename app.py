@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from services.model import train_model, predict_image
+from services.model import train_model, predict_image, predict_dog_breed
 from services.images import search_images
 from pydantic import BaseModel
 import traceback
@@ -87,7 +87,6 @@ async def predict(model: UploadFile = File(...), images: list[UploadFile] = File
         )
 
     for image in images:
-        print(image.content_type)
         if image.size is None or image.size > 2 * MB or image.content_type != 'image/jpeg':
             return JSONResponse(
                 status_code=400,
@@ -114,6 +113,47 @@ async def predict(model: UploadFile = File(...), images: list[UploadFile] = File
         shutil.rmtree(f'./predictions/{id}')
 
         return categories
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={'error': 'Something went wrong while predicting your images!'}
+        )
+
+
+@app.post('/dog-breed-identifier')
+async def predict_dog_image(images: list[UploadFile] = File(...)):
+    if len(images) > 10 or len(images) < 1:
+        return JSONResponse(
+            status_code=400,
+            content={'error': 'Invalid fields'}
+        )
+
+    for image in images:
+        if image.size is None or image.size > 2 * MB or image.content_type != 'image/jpeg':
+            return JSONResponse(
+                status_code=400,
+                content={'error': 'Invalid fields'}
+            )
+
+    if not os.path.exists('./dog-images'):
+        os.mkdir('./dog-images')
+
+    id = uuid4()
+
+    os.mkdir(f'./dog-images/{id}')
+
+    try:
+        breeds = []
+
+        for image in images:
+            breed = predict_dog_breed(f'./dog-images/{id}', image)
+            breeds.append(breed)
+
+        shutil.rmtree(f'./dog-images/{id}')
+
+        return breeds
     except Exception as e:
         print(e)
         traceback.print_exc()
